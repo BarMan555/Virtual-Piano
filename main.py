@@ -12,8 +12,13 @@ from pianoControlPanel import PianoControlPanel
 from pianoKeyboard import PianoKeyboard
 from volume import VolumeControl
 
+from loguru import logger
+
 # Инициализация микшера pygame
 pygame.mixer.init()
+
+# Добавляем логирование в файл
+logger.add("debug/debug.log", format="{time} - {level} - {message}", level="DEBUG")
 
 class MainWindow(QMainWindow):
     def __init__(self):
