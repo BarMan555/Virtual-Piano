@@ -1,15 +1,25 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QColor, QMouseEvent
+from PyQt5.QtGui import QPainter, QColor, QMouseEvent, QKeyEvent
 from loguru import logger
 import pygame.mixer
+import json
+
+from pygame.examples.midi import null_key
+
+# Открываем файл и загружаем его содержимое
+with open("hot_key.json", "r", encoding="utf-8") as file:
+    hot_key = json.load(file)
 
 # Путь к папке со звуками
 SOUND_PATH = "sounds/"
 
+
+
 class PianoKeyboard(QWidget):
-    def __init__(self, volume_control, recorder):
+    def __init__(self, volume_control, recorder, key = null_key):
         super().__init__()
+        self.setShortcutAutoRepeat(False)
         self.volume_control = volume_control
         self.recorder = recorder
 
@@ -17,17 +27,17 @@ class PianoKeyboard(QWidget):
         self.num_white_keys = 36
         self.num_black_keys = self.num_white_keys // 7 * 5
 
-        self.white_notes = ["C-1", "D-1", "E-1", "F-1", "G-1", "A-1", "B-1",
-                            "C0", "D0", "E0", "F0", "G0", "A0", "B0",
-                            "C1", "D1", "E1", "F1", "G1", "A1", "B1",
+        self.white_notes = ["C1", "D1", "E1", "F1", "G1", "A1", "B1",
                             "C2", "D2", "E2", "F2", "G2", "A2", "B2",
                             "C3", "D3", "E3", "F3", "G3", "A3", "B3",
-                            "C4"]
-        self.black_notes = ["C#-1", "D#-1", "F#-1", "G#-1", "A#-1",
-                            "C#0", "D#0", "F#0", "G#0", "A#0",
-                            "C#1", "D#1", "F#1", "G#1", "A#1",
+                            "C4", "D4", "E4", "F4", "G4", "A4", "B4",
+                            "C5", "D5", "E5", "F5", "G5", "A5", "B5",
+                            "C6"]
+        self.black_notes = ["C#1", "D#1", "F#1", "G#1", "A#1",
                             "C#2", "D#2", "F#2", "G#2", "A#2",
-                            "C#3", "D#3", "F#3", "G#3", "A#3"]
+                            "C#3", "D#3", "F#3", "G#3", "A#3",
+                            "C#4", "D#4", "F#4", "G#4", "A#4",
+                            "C#5", "D#5", "F#5", "G#5", "A#5"]
 
         self.black_key_offsets = [1, 2, 4, 5, 6]
         self.pressed_white_keys = [False] * self.num_white_keys
@@ -65,6 +75,38 @@ class PianoKeyboard(QWidget):
                 self.recorder.add_note_event(note)
             except Exception as e:
                 logger.error(f"Ошибка при воспроизведении звука для {note}: {e}")
+
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """Обработка нажатий клавиш."""
+        key = hot_key.get(str(event.key()))
+        note = key
+
+        if note in self.white_notes:
+            index = self.white_notes.index(note)
+            if self.pressed_white_keys[index] is True:
+                return
+            else:
+                self.pressed_white_keys[index] = True
+
+        if note in self.black_notes:
+            index = self.black_notes.index(note)
+            if self.pressed_black_keys[index] is True:
+                return
+            else:
+                self.pressed_black_keys[index] = True
+
+
+        # Проигрываем звук
+        self.play_sound(note)
+
+        self.update()
+
+    def keyReleaseEvent(self, event):
+        """Сбрасываем нажатие клавиш."""
+        self.pressed_white_keys = [False] * self.num_white_keys
+        self.pressed_black_keys = [False] * self.num_black_keys
+        self.update()
 
     def mousePressEvent(self, event: QMouseEvent):
         """Обработка нажатий клавиш."""

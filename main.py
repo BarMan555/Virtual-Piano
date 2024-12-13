@@ -1,9 +1,11 @@
 import sys
+import json
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QSlider, QPushButton, QWidget, QHBoxLayout, \
     QSizePolicy, QGridLayout, QAction, QStyle
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QColor, QMouseEvent
+from PyQt5.QtGui import QPainter, QColor, QMouseEvent, QKeyEvent
 import pygame.mixer
+from pygame.examples.midi import null_key
 
 from recorder import Recorder
 from metronome import Metronome
@@ -14,8 +16,13 @@ from volume import VolumeControl
 
 from loguru import logger
 
+# Открываем файл и загружаем его содержимое
+with open("hot_key.json", "r", encoding="utf-8") as file:
+    hot_key = json.load(file)
+
 # Инициализация микшера pygame
 pygame.mixer.init()
+pygame.mixer.set_num_channels(32)
 
 # Добавляем логирование в файл
 logger.add("debug/debug.log", format="{time} - {level} - {message}", level="DEBUG")
@@ -40,19 +47,36 @@ class MainWindow(QMainWindow):
         control_panel = PianoControlPanel(volume_control, recorder, metronome)
 
         # Нижняя панель пианино
-        piano_panel = PianoKeyboard(volume_control, recorder)
+        self.piano_panel = PianoKeyboard(volume_control, recorder)
 
         # Основной макет
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(5, 0, 0, 0)  # Отступы: слева, сверху, справа, снизу
         main_layout.setSpacing(0)
         main_layout.addWidget(control_panel)
-        main_layout.addWidget(piano_panel)
+        main_layout.addWidget(self.piano_panel)
 
         central_widget = QWidget()
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
         # self.setFixedHeight(600)
+
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """Обработка нажатий клавиш."""
+        if event.isAutoRepeat():
+            return
+        key = hot_key.get(str(event.key()))
+        if key is not None:
+            self.piano_panel.keyPressEvent(event)
+
+    def keyReleaseEvent(self, event):
+        """Обработка отпускания клавиш."""
+        if event.isAutoRepeat():
+            return
+        key = hot_key.get(str(event.key()))
+        if key is not None:
+            self.piano_panel.keyReleaseEvent(event)
 
 
 if __name__ == "__main__":

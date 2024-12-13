@@ -19,6 +19,7 @@ class Recorder:
         if not os.path.exists(self.record_folder):
             os.makedirs(self.record_folder)
 
+    # При нажатии на кнопку Record
     def toggle_recording(self):
         """Переключение состояния записи."""
         if not self.recording:

@@ -8,10 +8,10 @@ class Metronome:
         self.metronome_playing = False  # Переменная для отслеживания состояния метронома
         pygame.mixer.init()  # Инициализируем pygame для работы с аудио
         self.interval = 60 / bpm
-        self.tick_sound = pygame.mixer.Sound(TICK_PATH)  # Замените на ваш звук
+        self.tick_sound = pygame.mixer.Sound(TICK_PATH)  # Звук тика
         self.tick_sound.set_volume(volume)
 
-        # При нажатии на кнопку Tempo
+        # При нажатии на кнопку Metronome
     def on_tempo_button_click(self):
         if not self.metronome_playing:
             self.start_metronome()  # Запускаем метроном

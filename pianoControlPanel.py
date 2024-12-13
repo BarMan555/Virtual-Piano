@@ -45,6 +45,7 @@ class PianoControlPanel(QWidget):
         record_button.clicked.connect(self.recorder.toggle_recording)
 
         change_voice_button = QPushButton("Change Voice")
+
         tempo_button = QPushButton("Metronome")
         tempo_button.clicked.connect(self.metronome.on_tempo_button_click)
 
@@ -60,15 +61,3 @@ class PianoControlPanel(QWidget):
         buttons_menu = QWidget()
         buttons_menu.setLayout(button_grid)
         return buttons_menu
-
-    # def toggle_recording(self):
-    #     if self.recorder.recording:
-    #         # Остановить запись: возвращаем стандартный цвет
-    #         self.record_button.setStyleSheet("background-color: white; color: black")
-    #         self.record_button.setText("Record")
-    #         self.recorder.stop_recording()
-    #     else:
-    #         # Начать запись: изменяем цвет на красный
-    #         self.record_button.setStyleSheet("background-color: red; color: white")
-    #         self.record_button.setText("Recording...")
-    #         self.recorder.start_recording()
