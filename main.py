@@ -13,6 +13,7 @@ from menuBar import MenuBar
 from pianoControlPanel import PianoControlPanel
 from pianoKeyboard import PianoKeyboard
 from volume import VolumeControl
+from midiPlayer import MidiPlayer
 
 from loguru import logger
 
@@ -26,6 +27,7 @@ pygame.mixer.set_num_channels(32)
 
 # Добавляем логирование в файл
 logger.add("debug/debug.log", format="{time} - {level} - {message}", level="DEBUG")
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -43,11 +45,14 @@ class MainWindow(QMainWindow):
 
         self.setMenuBar(menu_bar)
 
-        # Верхняя панель управления
-        control_panel = PianoControlPanel(volume_control, recorder, metronome)
-
         # Нижняя панель пианино
         self.piano_panel = PianoKeyboard(volume_control, recorder)
+
+        # Верхняя панель управления
+        control_panel = PianoControlPanel(volume_control, recorder, metronome, self.piano_panel)
+
+        self.piano_panel.key_pressed.connect(control_panel.update_pressed_keys)
+
 
         # Основной макет
         main_layout = QVBoxLayout()
