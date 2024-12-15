@@ -1,9 +1,12 @@
+import time
+
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QColor, QMouseEvent, QKeyEvent
 from loguru import logger
 import pygame.mixer
 import json
+from mido import MidiFile
 
 from pygame.examples.midi import null_key
 
@@ -17,6 +20,8 @@ SOUND_PATH = "sounds/"
 
 
 class PianoKeyboard(QWidget):
+    key_pressed = pyqtSignal(set)
+
     def __init__(self, volume_control, recorder, key = null_key):
         super().__init__()
         self.setShortcutAutoRepeat(False)
@@ -40,8 +45,8 @@ class PianoKeyboard(QWidget):
                             "C#5", "D#5", "F#5", "G#5", "A#5"]
 
         self.black_key_offsets = [1, 2, 4, 5, 6]
-        self.pressed_white_keys = [False] * self.num_white_keys
-        self.pressed_black_keys = [False] * self.num_black_keys
+        self.pressed_keys = set()
+        self.pressed_note = None
 
         self.sound_map = {}
         self.load_sounds()
@@ -82,20 +87,13 @@ class PianoKeyboard(QWidget):
         key = hot_key.get(str(event.key()))
         note = key
 
-        if note in self.white_notes:
-            index = self.white_notes.index(note)
-            if self.pressed_white_keys[index] is True:
+        if note in self.white_notes or note in self.black_notes:
+            if note in self.pressed_keys is True:
                 return
             else:
-                self.pressed_white_keys[index] = True
+                self.pressed_keys.add(note)
 
-        if note in self.black_notes:
-            index = self.black_notes.index(note)
-            if self.pressed_black_keys[index] is True:
-                return
-            else:
-                self.pressed_black_keys[index] = True
-
+        self.key_pressed.emit(self.pressed_keys)
 
         # Проигрываем звук
         self.play_sound(note)
@@ -104,8 +102,13 @@ class PianoKeyboard(QWidget):
 
     def keyReleaseEvent(self, event):
         """Сбрасываем нажатие клавиш."""
-        self.pressed_white_keys = [False] * self.num_white_keys
-        self.pressed_black_keys = [False] * self.num_black_keys
+        key = hot_key.get(str(event.key()))
+        note = key
+
+        if note in self.pressed_keys:
+            self.pressed_keys.remove(note)
+            self.key_pressed.emit(self.pressed_keys)
+
         self.update()
 
     def mousePressEvent(self, event: QMouseEvent):
@@ -126,7 +129,7 @@ class PianoKeyboard(QWidget):
                 black_key_x = (self.black_key_offsets[i % 5] + octave * 7) * white_key_width - black_key_width // 2
                 if black_key_x <= x < black_key_x + black_key_width:
                     note = self.black_notes[i]
-                    self.pressed_black_keys[i] = True
+
                     break
 
         # Проверяем белые клавиши
@@ -134,7 +137,11 @@ class PianoKeyboard(QWidget):
             white_key_index = x // white_key_width
             if 0 <= white_key_index < len(self.white_notes):
                 note = self.white_notes[white_key_index]
-                self.pressed_white_keys[white_key_index] = True
+
+        self.pressed_keys.add(note)
+        self.pressed_note = note
+
+        self.key_pressed.emit(self.pressed_keys)
 
         # Проигрываем звук
         if note:
@@ -144,8 +151,9 @@ class PianoKeyboard(QWidget):
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         """Сбрасываем нажатие клавиш."""
-        self.pressed_white_keys = [False] * self.num_white_keys
-        self.pressed_black_keys = [False] * self.num_black_keys
+        self.pressed_keys.remove(self.pressed_note)
+        self.key_pressed.emit(self.pressed_keys)
+
         self.update()
 
     def paintEvent(self, event):
@@ -159,18 +167,42 @@ class PianoKeyboard(QWidget):
         black_key_height = int(height * 0.6)
 
         # Рисуем белые клавиши
-        for i in range(self.num_white_keys):
-            color = QColor(220, 220, 220) if self.pressed_white_keys[i] else QColor(255, 255, 255)
+        for i, note in zip(range(self.num_white_keys), self.white_notes):
+            color = QColor(220, 220, 220) if (note in self.pressed_keys) else QColor(255, 255, 255)
             painter.setBrush(color)
             painter.setPen(Qt.black)
             painter.drawRect(i * white_key_width, 0, white_key_width, height)
 
         # Рисуем черные клавиши
-        for i in range(self.num_black_keys):
+        for i, note in zip(range(self.num_black_keys), self.black_notes):
             octave = i // 5
             x = (self.black_key_offsets[i % 5] + octave * 7) * white_key_width - black_key_width // 2
-            color = QColor(50, 50, 50) if self.pressed_black_keys[i] else QColor(0, 0, 0)
+            color = QColor(50, 50, 50) if (note in self.pressed_keys) else QColor(0, 0, 0)
             painter.setBrush(color)
             painter.setPen(Qt.black)
             painter.drawRect(x, 0, black_key_width, black_key_height)
 
+
+    def highlight_key(self, midi_note):
+        key_name = self.midi_to_key(midi_note)
+        logger.debug(f"Подсветка клавиши: {key_name}")
+        self.pressed_keys.add(key_name)
+        self.play_sound(key_name)
+        self.key_pressed.emit(self.pressed_keys)
+
+        self.update()
+
+
+    def release_key(self, midi_note):
+        key_name = self.midi_to_key(midi_note)
+        logger.debug(f"Снятие подсветки: {key_name}")
+        self.pressed_keys.remove(key_name)
+        self.key_pressed.emit(self.pressed_keys)
+
+        self.update()
+
+    def midi_to_key(self, midi_note):
+        notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+        note_name = notes[midi_note % 12]
+        octave = (midi_note // 12) - 1
+        return f"{note_name}{octave}"
