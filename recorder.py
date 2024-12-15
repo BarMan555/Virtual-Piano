@@ -2,6 +2,7 @@ import os
 import wave
 import time
 import pygame
+from mido import MidiFile, MidiTrack, Message
 import numpy as np
 from loguru import logger
 from datetime import datetime
@@ -39,6 +40,7 @@ class Recorder:
         self.recording = False
         logger.info("Запись завершена.")
         self.save_to_wav()
+        self.save_to_midi()
 
     def add_note_event(self, note):
         """Добавляем событие нажатия ноты."""
@@ -50,6 +52,9 @@ class Recorder:
 
     def save_to_wav(self):
         """Сохраняем записанную мелодию в WAV."""
+        if not self.notes:
+            logger.warning("Ничего не было записанно")
+            return
         file_name = f"{self.record_folder}/record_{datetime.now().strftime('%Y%m%d_%H%M%S')}.wav"
 
         # Параметры записи
@@ -89,4 +94,72 @@ class Recorder:
             wav_file.setframerate(sample_rate)
             wav_file.writeframes((samples * 32767).astype(np.int16).tobytes())
 
-        logger.success(f"Файл сохранён: {file_name}")
+        logger.success(f"WAV Файл сохранён: {file_name}")
+
+    def save_to_midi(self):
+        """Сохраняем записанную мелодию в MIDI файл."""
+        if not self.notes:
+            logger.warning("Ничего не было записанно")
+            return
+        file_name = f"{self.record_folder}/record_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mid"
+        midi_file = MidiFile()
+        track = MidiTrack()
+        midi_file.tracks.append(track)
+
+        # Установим инструмент, например, фортепиано
+        track.append(Message('program_change', program=0, time=0))
+
+        # Перебираем записанные ноты и вычисляем их длительность
+        for i, (note, timestamp) in enumerate(self.notes):
+            note_num = self.note_to_midi(note)  # Конвертируем ноту в MIDI-номер
+            # Определяем временную разницу между нотами (в тиках MIDI)
+            if i == 0:
+                delta_time = 0  # Первая нота начинается сразу
+            else:
+                delta_time = int((self.notes[i][1] - self.notes[i - 1][1]) * 480)  # Время в тиках между нотами
+
+            # Добавляем событие начала ноты
+            track.append(Message('note_on', note=note_num, velocity=64, time=delta_time))
+
+            # Определяем длительность ноты
+            if i + 1 < len(self.notes):
+                duration = int((self.notes[i + 1][1] - timestamp) * 480)  # Длительность до следующей ноты
+            else:
+                duration = 480  # Последняя нота длится 1/4 такта (по умолчанию)
+
+            # Добавляем событие завершения ноты
+            track.append(Message('note_off', note=note_num, velocity=64, time=duration))
+
+        # Сохраняем файл
+        midi_file.save(file_name)
+        logger.success(f"MIDI файл сохранен: {file_name}")
+
+    def note_to_midi(self, note):
+        """
+        Конвертируем название ноты (с указанием октавы) в MIDI-номер.
+        Поддерживаются ноты от C1 до C5.
+        """
+        note_map = {
+            "C": 0,
+            "C#": 1,
+            "D": 2,
+            "D#": 3,
+            "E": 4,
+            "F": 5,
+            "F#": 6,
+            "G": 7,
+            "G#": 8,
+            "A": 9,
+            "A#": 10,
+            "B": 11
+        }
+
+        # Извлекаем название ноты и номер октавы
+        try:
+            base_note = note[:-1]  # Например, "C4" -> "C"
+            octave = int(note[-1])  # Например, "C4" -> 4
+            midi_number = 12 * (octave + 1) + note_map[base_note]
+            return midi_number
+        except (KeyError, ValueError):
+            # Возвращаем ноту C4 (60), если данные некорректны
+            return 60
