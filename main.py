@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QColor, QMouseEvent, QKeyEvent
 import pygame.mixer
 from pygame.examples.midi import null_key
-
+from checkLicense import validate_license
 from recorder import Recorder
 from metronome import Metronome
 from menuBar import MenuBar
@@ -85,6 +85,10 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    if not validate_license():
+        logger.error("Ошибка проверки лицезнии. В доступе отказано!")
+        exit()
+
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     window = MainWindow()
