@@ -1,12 +1,9 @@
-import time
-
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QColor, QMouseEvent, QKeyEvent
 from loguru import logger
 import pygame.mixer
 import json
-from mido import MidiFile
 
 from pygame.examples.midi import null_key
 

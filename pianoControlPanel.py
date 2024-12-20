@@ -1,9 +1,8 @@
 import time
-from importlib.resources import is_resource
 
 from PyQt5.QtWidgets import QSlider, QPushButton, QWidget, QHBoxLayout, \
     QSizePolicy, QGridLayout, QLabel, QFileDialog, QProgressBar, QVBoxLayout
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt
 from midiPlayer import MidiPlayer
 
 class PianoControlPanel(QWidget):
