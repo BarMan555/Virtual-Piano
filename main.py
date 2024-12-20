@@ -1,11 +1,8 @@
 import sys
 import json
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QSlider, QPushButton, QWidget, QHBoxLayout, \
-    QSizePolicy, QGridLayout, QAction, QStyle
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QColor, QMouseEvent, QKeyEvent
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QMessageBox
+from PyQt5.QtGui import QKeyEvent
 import pygame.mixer
-from pygame.examples.midi import null_key
 from checkLicense import validate_license
 from recorder import Recorder
 from metronome import Metronome
@@ -13,8 +10,6 @@ from menuBar import MenuBar
 from pianoControlPanel import PianoControlPanel
 from pianoKeyboard import PianoKeyboard
 from volume import VolumeControl
-from midiPlayer import MidiPlayer
-
 from loguru import logger
 
 # Открываем файл и загружаем его содержимое
@@ -32,6 +27,12 @@ logger.add("debug/debug.log", format="{time} - {level} - {message}", level="DEBU
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        # Проверяем лицензию
+        if not validate_license():
+            self.show_license_error()
+            sys.exit(0)  # Завершаем приложение, если лицензия невалидна
+
         self.initUI()
 
     def initUI(self):
@@ -66,6 +67,14 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         # self.setFixedHeight(600)
 
+    def show_license_error(self):
+        """Отображение окна с сообщением об ошибке лицензии."""
+        error_msg = QMessageBox()
+        error_msg.setIcon(QMessageBox.Critical)
+        error_msg.setWindowTitle("Ошибка лицензии")
+        error_msg.setText("Невозможно запустить приложение.\nЛицензионный ключ недействителен.")
+        error_msg.setStandardButtons(QMessageBox.Ok)
+        error_msg.exec_()
 
     def keyPressEvent(self, event: QKeyEvent):
         """Обработка нажатий клавиш."""
@@ -85,12 +94,9 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    if not validate_license():
-        logger.error("Ошибка проверки лицезнии. В доступе отказано!")
-        exit()
-
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+ 
