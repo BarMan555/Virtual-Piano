@@ -11,6 +11,7 @@ class Metronome:
         self.tick_sound = pygame.mixer.Sound(TICK_PATH)  # Звук тика
         self.tick_sound.set_volume(volume)
 
+
         # При нажатии на кнопку Metronome
     def on_tempo_button_click(self):
         if not self.metronome_playing:
@@ -35,3 +36,11 @@ class Metronome:
     def stop_metronome(self):
         """Останавливаем метроном."""
         self.metronome_playing = False
+
+    def update_data(self, new_bpm, new_volume):
+        """Обновление данных для метронома (BPM и громкость)."""
+        self.stop_metronome()  # Останавливаем метроном перед изменением параметров
+        self.interval = 60 / new_bpm  # Обновляем интервал
+        self.tick_sound.set_volume(new_volume)  # Обновляем громкость
+        self.start_metronome()  # Перезапускаем метроном с новыми параметрами
+
