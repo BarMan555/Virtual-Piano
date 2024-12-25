@@ -1,8 +1,8 @@
 import sys
 import json
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QMessageBox
-from PyQt5.QtGui import QKeyEvent
 import pygame.mixer
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QMessageBox
+from PyQt5.QtGui import QKeyEvent, QIcon
 from checkLicense import validate_license
 from recorder import Recorder
 from metronome import Metronome
@@ -18,7 +18,7 @@ with open("hot_key.json", "r", encoding="utf-8") as file:
 
 # Инициализация микшера pygame
 pygame.mixer.init()
-pygame.mixer.set_num_channels(32)
+pygame.mixer.set_num_channels(64)
 
 # Добавляем логирование в файл
 logger.add("debug/debug.log", format="{time} - {level} - {message}", level="DEBUG")
@@ -37,13 +37,15 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("Virtual Piano")
-        self.setMinimumSize(1200, 400)
+        self.setWindowIcon((QIcon("icon/piano.ico")))
+        self.setFixedSize(1200, 400)
 
         volume_control = VolumeControl()
         recorder = Recorder()
-        metronome = Metronome(bpm=120)
+        metronome = Metronome(bpm=60)
         menu_bar = MenuBar(self)
 
+        # Меню сверху
         self.setMenuBar(menu_bar)
 
         # Нижняя панель пианино
@@ -52,8 +54,8 @@ class MainWindow(QMainWindow):
         # Верхняя панель управления
         control_panel = PianoControlPanel(volume_control, recorder, metronome, self.piano_panel)
 
+        # Для отображения нажатых клавиш на панеле управления
         self.piano_panel.key_pressed.connect(control_panel.update_pressed_keys)
-
 
         # Основной макет
         main_layout = QVBoxLayout()
@@ -65,7 +67,6 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
-        # self.setFixedHeight(600)
 
     def show_license_error(self):
         """Отображение окна с сообщением об ошибке лицензии."""
@@ -78,16 +79,22 @@ class MainWindow(QMainWindow):
 
     def keyPressEvent(self, event: QKeyEvent):
         """Обработка нажатий клавиш."""
+
+        # Чтобы не было многократного нажатия зажатой клавиши
         if event.isAutoRepeat():
             return
+
         key = hot_key.get(str(event.key()))
         if key is not None:
             self.piano_panel.keyPressEvent(event)
 
     def keyReleaseEvent(self, event):
         """Обработка отпускания клавиш."""
+
+        # Чтобы не было многократного нажатия зажатой клавиши
         if event.isAutoRepeat():
             return
+
         key = hot_key.get(str(event.key()))
         if key is not None:
             self.piano_panel.keyReleaseEvent(event)

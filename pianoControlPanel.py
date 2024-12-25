@@ -1,5 +1,4 @@
 import time
-
 from PyQt5.QtWidgets import QSlider, QPushButton, QWidget, QHBoxLayout, \
     QSizePolicy, QGridLayout, QLabel, QFileDialog, QProgressBar, QVBoxLayout
 from PyQt5.QtCore import Qt
@@ -9,7 +8,7 @@ class PianoControlPanel(QWidget):
     def __init__(self, volume_control, recorder, metronome, piano_panel):
         super().__init__()
 
-        self.is_recording = False;
+        self.is_recording = False
 
         self.volume_control = volume_control
         self.recorder = recorder
@@ -124,16 +123,16 @@ class PianoControlPanel(QWidget):
             button = QPushButton("")
             button.setStyleSheet("""
                 QPushButton {
-                    background-color: white;      /* Зеленый фон */
-                    color: black;                  /* Белый текст */
-                    border: 2px solid gray;     /* Рамка */
+                    background-color: white;      /* Белый фон */
+                    color: black;                  /* Черный текст */
+                    border: 2px solid gray;     /* Рамка серая */
                     border-radius: 5px;            /* Закругленные углы */
                     padding: 3px;                  /* Внутренний отступ */
                     font-size: 16px;
                 }
                 QPushButton:hover {
-                    background-color: gray;     /* Более темный зеленый при наведении */
-                    color: white
+                    background-color: gray;     /* Серый при наведении */
+                    color: white /* Белые буквы */
                 }
                 QPushButton:pressed {
                     background-color: #36732d;     /* Темно-зеленый при нажатии */
@@ -168,7 +167,7 @@ class PianoControlPanel(QWidget):
             self.is_recording = True
             self.buttons[0].setStyleSheet("""
                 QPushButton {
-                            background-color: red;      /* Зеленый фон */
+                            background-color: red;      /* Красный фон */
                             color: white;                  /* Белый текст */
                             border: 2px solid gray;     /* Рамка */
                             border-radius: 5px;            /* Закругленные углы */
@@ -176,7 +175,7 @@ class PianoControlPanel(QWidget):
                             font-size: 16px;
                         }
                         QPushButton:hover {
-                            background-color: gray;     /* Более темный зеленый при наведении */
+                            background-color: gray;     /* Серый при наведении */
                             color: white
                         }
                         QPushButton:pressed {
@@ -187,15 +186,15 @@ class PianoControlPanel(QWidget):
             self.is_recording = False
             self.buttons[0].setStyleSheet("""
                             QPushButton {
-                                        background-color: white;      /* Зеленый фон */
-                                        color: black;                  /* Белый текст */
+                                        background-color: white;      /* Белый фон */
+                                        color: black;                  /* Черный текст */
                                         border: 2px solid gray;     /* Рамка */
                                         border-radius: 5px;            /* Закругленные углы */
                                         padding: 3px;                  /* Внутренний отступ */
                                         font-size: 16px;
                                     }
                                     QPushButton:hover {
-                                        background-color: gray;     /* Более темный зеленый при наведении */
+                                        background-color: gray;     /* Серый при наведении */
                                         color: white
                                     }
                                     QPushButton:pressed {

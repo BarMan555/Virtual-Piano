@@ -1,10 +1,9 @@
+import pygame.mixer
+import json
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QColor, QMouseEvent, QKeyEvent
 from loguru import logger
-import pygame.mixer
-import json
-
 from pygame.examples.midi import null_key
 
 # Открываем файл и загружаем его содержимое
@@ -61,10 +60,11 @@ class PianoKeyboard(QWidget):
             file_path = SOUND_PATH + note + ".wav"
             try:
                 self.sound_map[note] = pygame.mixer.Sound(file_path)
-            except pygame.error:
-                logger.error(f"Не удалось загрузить звук {note}")
             except FileNotFoundError:
                 logger.error(f"Звуковой файл {note}.wav не был найден")
+            except pygame.error:
+                logger.error(f"Не удалось загрузить звук {note}")
+
 
 
     def play_sound(self, note):
