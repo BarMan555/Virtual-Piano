@@ -13,7 +13,7 @@ from volume import VolumeControl
 from loguru import logger
 
 # Открываем файл и загружаем его содержимое
-with open("hot_key.json", "r", encoding="utf-8") as file:
+with open("config/hot_key.json", "r", encoding="utf-8") as file:
     hot_key = json.load(file)
 
 # Инициализация микшера pygame
@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("Virtual Piano")
-        self.setWindowIcon((QIcon("icon/piano.ico")))
+        self.setWindowIcon((QIcon("resources/icon/piano.ico")))
         self.setFixedSize(1200, 400)
 
         volume_control = VolumeControl()

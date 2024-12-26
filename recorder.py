@@ -7,7 +7,7 @@ import numpy as np
 from loguru import logger
 from datetime import datetime
 
-SOUND_PATH = "sounds/"
+SOUND_PATH = "resources/sounds/"
 
 class Recorder:
     def __init__(self, record_folder="record"):

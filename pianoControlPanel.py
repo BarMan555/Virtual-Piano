@@ -1,4 +1,5 @@
 import time
+import os
 from PyQt5.QtWidgets import QSlider, QPushButton, QWidget, QHBoxLayout, \
     QSizePolicy, QGridLayout, QLabel, QFileDialog, QProgressBar, QVBoxLayout
 from PyQt5.QtCore import Qt
@@ -213,7 +214,7 @@ class PianoControlPanel(QWidget):
     def open_midi_file(self):
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
-        file_path, _ = QFileDialog.getOpenFileName(self, "Выберите MIDI файл", "", "MIDI Files (*.mid)",
+        file_path, _ = QFileDialog.getOpenFileName(self, "Выберите MIDI файл", os.path.join(os.getcwd(), 'record'), "MIDI Files (*.mid)",
                                                    options=options)
         self.midi_thread = MidiPlayer(file_path, self.piano_panel)
         if file_path:

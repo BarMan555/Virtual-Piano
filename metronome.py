@@ -1,7 +1,7 @@
 import pygame
 import time
 
-TICK_PATH = "tick/tick.wav"
+TICK_PATH = "resources/tick/tick.wav"
 
 class Metronome:
     def __init__(self, bpm=60, volume = 0.2):

@@ -10,22 +10,17 @@ class MenuBar(QMenuBar):
     def init_menu(self):
 
         # Добавление разделов в меню-бар
-        #view_menu = self.addMenu("Внешний вид")
-        setting_menu = self.addMenu("Настройки")
         about_menu = self.addMenu("Справка")
 
         about_action = QAction("О программе", self)
         contacts_action = QAction("Об авторе", self)
-        setting_action = QAction("Настройки метронома", self)
 
         about_menu.addAction(about_action)
         about_menu.addAction(contacts_action)
-        setting_menu.addAction(setting_action)
 
         # Связываем действия с функциями
         about_action.triggered.connect(self.show_about)
         contacts_action.triggered.connect(self.show_contacts)
-        setting_action.triggered.connect(self.setting_metronome)
 
     def show_about(self):
         """Показывает окно "О программе"."""
@@ -59,6 +54,3 @@ class MenuBar(QMenuBar):
         contacts_box.setIcon(QMessageBox.Information)
         contacts_box.setStandardButtons(QMessageBox.Ok)
         contacts_box.exec_()
-
-    def setting_metronome(self):
-        pass

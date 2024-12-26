@@ -4,21 +4,20 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QColor, QMouseEvent, QKeyEvent
 from loguru import logger
-from pygame.examples.midi import null_key
 
 # Открываем файл и загружаем его содержимое
-with open("hot_key.json", "r", encoding="utf-8") as file:
+with open("config/hot_key.json", "r", encoding="utf-8") as file:
     hot_key = json.load(file)
 
 # Путь к папке со звуками
-SOUND_PATH = "sounds/"
+SOUND_PATH = "resources/sounds/"
 
 
 
 class PianoKeyboard(QWidget):
     key_pressed = pyqtSignal(set)
 
-    def __init__(self, volume_control, recorder, key = null_key):
+    def __init__(self, volume_control, recorder):
         super().__init__()
         self.setShortcutAutoRepeat(False)
         self.volume_control = volume_control
